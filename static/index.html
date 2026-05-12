@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Proposal & Report Writer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #1a365d;
+    --blue:   #2b6cb0;
+    --sky:    #bee3f8;
+    --light:  #f0f7ff;
+    --text:   #2d3748;
+    --muted:  #718096;
+    --border: #e2e8f0;
+    --white:  #ffffff;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(26,54,93,0.10);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ───────────────────────────────────────────── */
+  header {
+    background: var(--navy);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 64px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .logo-badge {
+    width: 40px; height: 40px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    color: white; font-size: 1rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    color: white; font-size: 1.2rem; font-weight: 400;
+  }
+  header span { color: var(--sky); font-size: 0.78rem; margin-left: auto; font-weight: 300; }
+
+  /* ── Main layout ──────────────────────────────────────── */
+  main {
+    flex: 1;
+    display: grid;
+    place-items: start center;
+    padding: 3rem 1rem 4rem;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem 2.5rem 2rem;
+    width: 100%;
+    max-width: 620px;
+    border: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.6rem;
+    color: var(--navy);
+    margin-bottom: 0.3rem;
+  }
+  .card-subtitle {
+    color: var(--muted);
+    font-size: 0.88rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Form ─────────────────────────────────────────────── */
+  .field { margin-bottom: 1.25rem; }
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  input, textarea, select {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(43,108,176,0.12);
+  }
+  textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
+
+  /* Doc type toggle */
+  .toggle-group {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+  }
+  .toggle-option { position: relative; }
+  .toggle-option input[type="radio"] { position: absolute; opacity: 0; width: 0; }
+  .toggle-option label {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.65rem 1rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--white);
+    transition: all 0.18s;
+  }
+  .toggle-option input:checked + label {
+    border-color: var(--blue);
+    background: var(--light);
+    color: var(--navy);
+    box-shadow: inset 0 0 0 1px var(--blue);
+  }
+  .toggle-option label:hover { border-color: var(--blue); color: var(--navy); }
+
+  /* ── Submit button ────────────────────────────────────── */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    background: var(--navy);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover:not(:disabled) { background: var(--blue); }
+  .btn:active:not(:disabled) { transform: scale(0.985); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  /* ── Status / feedback ────────────────────────────────── */
+  .status-box {
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    display: none;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .status-box.show { display: flex; }
+  .status-box.loading { background: #ebf8ff; color: var(--blue); border: 1px solid var(--sky); }
+  .status-box.success { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+  .status-box.error   { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--sky);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Footer ───────────────────────────────────────────── */
+  footer {
+    background: var(--navy);
+    color: var(--sky);
+    text-align: center;
+    font-size: 0.78rem;
+    padding: 0.9rem;
+    font-weight: 300;
+  }
+
+  /* ── Divider ──────────────────────────────────────────── */
+  .divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-badge">ACG</div>
+  <h1>AI Proposal & Report Writer</h1>
+  <span>Powered by GPT-4</span>
+</header>
+
+<main>
+  <div class="card">
+    <p class="card-title">Generate a Document</p>
+    <p class="card-subtitle">Fill in the details below — the AI will write and format a professional PDF in seconds.</p>
+
+    <div class="field">
+      <label>Document Type</label>
+      <div class="toggle-group">
+        <div class="toggle-option">
+          <input type="radio" name="report_type" id="type-proposal" value="proposal" checked/>
+          <label for="type-proposal">📄 Proposal</label>
+        </div>
+        <div class="toggle-option">
+          <input type="radio" name="report_type" id="type-report" value="report"/>
+          <label for="type-report">📊 Report</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="client_name">Client / Company Name</label>
+      <input type="text" id="client_name" placeholder="e.g. Acme Corp" required/>
+    </div>
+
+    <div class="field">
+      <label for="project_description">Project Description</label>
+      <textarea id="project_description"
+        placeholder="Describe the project, goals, and any relevant context. The more detail you provide, the better the output."
+        required></textarea>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="field">
+      <label for="template_id">Template</label>
+      <select id="template_id">
+        <option value="default">Default — Acme Consulting Group</option>
+      </select>
+    </div>
+
+    <button class="btn" id="submit-btn" onclick="handleSubmit()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Generate PDF
+    </button>
+
+    <div class="status-box loading" id="status-loading">
+      <div class="spinner"></div>
+      <span>Generating your document — this may take 15–30 seconds…</span>
+    </div>
+    <div class="status-box success" id="status-success">
+      ✅ <span>Your PDF is ready — download started automatically.</span>
+    </div>
+    <div class="status-box error" id="status-error">
+      ⚠️ <span id="error-msg">Something went wrong. Please try again.</span>
+    </div>
+  </div>
+</main>
+
+<footer>Acme Consulting Group &nbsp;•&nbsp; AI Proposal &amp; Report Writer MVP</footer>
+
+<script>
+  function setStatus(state) {
+    ['loading','success','error'].forEach(s => {
+      const el = document.getElementById('status-' + s);
+      el.classList.toggle('show', s === state);
+    });
+  }
+
+  async function handleSubmit() {
+    const clientName  = document.getElementById('client_name').value.trim();
+    const description = document.getElementById('project_description').value.trim();
+    const reportType  = document.querySelector('input[name="report_type"]:checked').value;
+    const templateId  = document.getElementById('template_id').value;
+    const btn         = document.getElementById('submit-btn');
+
+    if (!clientName || !description) {
+      alert('Please fill in the Client Name and Project Description.');
+      return;
+    }
+
+    btn.disabled = true;
+    setStatus('loading');
+
+    try {
+      const res = await fetch('/generate-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_name: clientName,
+          project_description: description,
+          report_type: reportType,
+          template_id: templateId,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(err.detail || `HTTP ${res.status}`);
+      }
+
+      // Trigger download
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      const cd   = res.headers.get('Content-Disposition') || '';
+      const match = cd.match(/filename="([^"]+)"/);
+      a.href     = url;
+      a.download = match ? match[1] : 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      setStatus('success');
+    } catch (err) {
+      document.getElementById('error-msg').textContent = err.message;
+      setStatus('error');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
